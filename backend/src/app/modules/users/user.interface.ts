@@ -1,11 +1,26 @@
-import { Model } from "mongoose";
+import { Model, ObjectId } from 'mongoose';
 /* eslint-disable no-unused-vars */
-export type TUserRole= 'admin' | 'superadmin' | 'moderator';
+export type LearningGoal = 'conversational' | 'professional' | 'sales';
+
+export type DailyChallengeProgress = {
+  date: string; // ISO string
+  vocabCompleted: boolean;
+  conversationCompleted: boolean;
+  grammarCompleted: boolean;
+  pronunciationCompleted: boolean;
+};
+
 export type TUser = {
   username: string;
   email: string;
-  password: string; // hashed password
-  role: 'admin' | 'superadmin' | 'moderator';
+  password: string; // hashed
+
+  learningGoal: LearningGoal;
+  currentDay: number;
+  dailyProgress: ObjectId[];
+  isVerified: boolean;
+  streak: number;
+  lastActive: Date;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -13,7 +28,6 @@ export type TUser = {
 export interface AdminUserModel extends Model<TUser> {
   isPasswordMatched(
     plainTextPassword: string,
-    hashedPassword: string
+    hashedPassword: string,
   ): Promise<boolean>;
-  
 }

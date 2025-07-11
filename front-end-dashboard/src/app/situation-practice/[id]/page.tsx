@@ -1,6 +1,6 @@
 "use client"
-
-import { useState, useRef, useEffect } from "react"
+import { useParams } from 'next/navigation'
+import React, { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Mic, MicOff, Play, Send, Volume2, RotateCcw, Pause } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,10 +8,12 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Link from 'next/link'
 
 // Mock scenario data - in real app this would come from props/API
-const scenarioData = {
-  1: {
+const scenarioData = [
+  {
+    id:1,
     title: "Morning Routine",
     description: "Watch someone's morning routine and describe what they do",
     difficulty: "Beginner",
@@ -28,7 +30,8 @@ const scenarioData = {
       "Leaving for work/day activities",
     ],
   },
-  2: {
+  {
+    id:2,
     title: "Cooking Process",
     description: "Observe a cooking demonstration and explain the steps",
     difficulty: "Intermediate",
@@ -43,7 +46,8 @@ const scenarioData = {
       "Plating and presentation",
     ],
   },
-  4: {
+  {
+    id:3,
     title: "Team Meeting",
     description: "Watch a team meeting and describe the discussion and decisions",
     difficulty: "Advanced",
@@ -59,116 +63,119 @@ const scenarioData = {
       "Final decisions and action items",
     ],
   },
-}
+]
 
 interface SituationPracticeProps {
   scenarioId: number
   onBack: () => void
 }
 
-export function SituationPractice({ scenarioId, onBack }: SituationPracticeProps) {
-  const [videoWatched, setVideoWatched] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
-  const [textResponse, setTextResponse] = useState("")
-  const [inputMode, setInputMode] = useState<"speech" | "text">("text")
-  const [feedback, setFeedback] = useState<any>(null)
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-
-  const recordingInterval = useRef<NodeJS.Timeout|null>(null)
-  const scenario = scenarioData[scenarioId as keyof typeof scenarioData]
-
-  useEffect(() => {
-    if (isRecording) {
-      recordingInterval.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1)
-      }, 1000)
-    } else {
-      if (recordingInterval.current) {
-        clearInterval(recordingInterval.current)
+const SituationPractice = () => {
+    const params = useParams();
+  const scenarioId = params.id;
+    const [videoWatched, setVideoWatched] = useState(false)
+      const [isPlaying, setIsPlaying] = useState(false)
+      const [isRecording, setIsRecording] = useState(false)
+      const [recordingTime, setRecordingTime] = useState(0)
+      const [textResponse, setTextResponse] = useState("")
+      const [inputMode, setInputMode] = useState<"speech" | "text">("text")
+      const [feedback, setFeedback] = useState<any>(null)
+      const [isAnalyzing, setIsAnalyzing] = useState(false)
+    
+      const recordingInterval = useRef<NodeJS.Timeout|null>(null)
+      const scenario = scenarioData.find((item)=>item.id === Number(scenarioId))
+    
+      useEffect(() => {
+        if (isRecording) {
+          recordingInterval.current = setInterval(() => {
+            setRecordingTime((prev) => prev + 1)
+          }, 1000)
+        } else {
+          if (recordingInterval.current) {
+            clearInterval(recordingInterval.current)
+          }
+        }
+    
+        return () => {
+          if (recordingInterval.current) {
+            clearInterval(recordingInterval.current)
+          }
+        }
+      }, [isRecording])
+    
+      const toggleRecording = () => {
+        setIsRecording(!isRecording)
+        if (!isRecording) {
+          setRecordingTime(0)
+        }
       }
-    }
-
-    return () => {
-      if (recordingInterval.current) {
-        clearInterval(recordingInterval.current)
+    
+      const playVideo = () => {
+        setIsPlaying(true)
+        // Simulate video playing
+        setTimeout(() => {
+          setIsPlaying(false)
+          setVideoWatched(true)
+        }, 3000) // 3 seconds for demo
       }
-    }
-  }, [isRecording])
-
-  const toggleRecording = () => {
-    setIsRecording(!isRecording)
-    if (!isRecording) {
-      setRecordingTime(0)
-    }
-  }
-
-  const playVideo = () => {
-    setIsPlaying(true)
-    // Simulate video playing
-    setTimeout(() => {
-      setIsPlaying(false)
-      setVideoWatched(true)
-    }, 3000) // 3 seconds for demo
-  }
-
-  const submitResponse = async () => {
-    if (!videoWatched) {
-      alert("Please watch the video first!")
-      return
-    }
-
-    setIsAnalyzing(true)
-
-    // Mock AI analysis - replace with actual API call
-    setTimeout(() => {
-      const mockFeedback = {
-        overallScore: Math.floor(Math.random() * 30) + 70, // 70-100%
-        completeness: Math.floor(Math.random() * 25) + 75,
-        accuracy: Math.floor(Math.random() + 25) + 75,
-        clarity: Math.floor(Math.random() * 25) + 75,
-        vocabulary: Math.floor(Math.random() * 25) + 75,
-        detailsCovered: Math.floor(Math.random() * scenario.expectedElements.length) + 2,
-        totalDetails: scenario.expectedElements.length,
-        strengths: [
-          "Good overall structure in your description",
-          "Clear and logical sequence of events",
-          "Appropriate use of descriptive language",
-        ],
-        improvements: [
-          "Try to include more specific details about timing",
-          "Describe the emotions or reactions of people involved",
-          "Use more varied vocabulary to describe actions",
-        ],
-        missedElements: scenario.expectedElements.slice(0, Math.floor(Math.random() * 2) + 1),
+    
+      const submitResponse = async () => {
+        if (!videoWatched) {
+          alert("Please watch the video first!")
+          return
+        }
+    
+        setIsAnalyzing(true)
+    
+        // Mock AI analysis - replace with actual API call
+        setTimeout(() => {
+          const mockFeedback = {
+            overallScore: Math.floor(Math.random() * 30) + 70, // 70-100%
+            completeness: Math.floor(Math.random() * 25) + 75,
+            accuracy: Math.floor(Math.random() + 25) + 75,
+            clarity: Math.floor(Math.random() * 25) + 75,
+            vocabulary: Math.floor(Math.random() * 25) + 75,
+            detailsCovered: Math.floor(Math.random() * scenario?.expectedElements?.length) + 2,
+            totalDetails: scenario?.expectedElements.length,
+            strengths: [
+              "Good overall structure in your description",
+              "Clear and logical sequence of events",
+              "Appropriate use of descriptive language",
+            ],
+            improvements: [
+              "Try to include more specific details about timing",
+              "Describe the emotions or reactions of people involved",
+              "Use more varied vocabulary to describe actions",
+            ],
+            missedElements: scenario?.expectedElements.slice(0, Math.floor(Math.random() * 2) + 1),
+          }
+    
+          setFeedback(mockFeedback)
+          setIsAnalyzing(false)
+        }, 2000)
       }
-
-      setFeedback(mockFeedback)
-      setIsAnalyzing(false)
-    }, 2000)
-  }
-
-  const resetPractice = () => {
-    setVideoWatched(false)
-    setIsPlaying(false)
-    setFeedback(null)
-    setTextResponse("")
-    setRecordingTime(0)
-    setIsRecording(false)
-  }
-
-  if (!scenario) {
-    return <div>Scenario not found</div>
-  }
-
+    
+      const resetPractice = () => {
+        setVideoWatched(false)
+        setIsPlaying(false)
+        setFeedback(null)
+        setTextResponse("")
+        setRecordingTime(0)
+        setIsRecording(false)
+      }
+    
+      if (!scenario) {
+        return <div>Scenario not found</div>
+      }
+    
   return (
-    <div className="space-y-6">
+     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={onBack}>
+        <Link href={'/situations'}>
+        <Button variant="outline" size="icon" >
           <ArrowLeft className="h-4 w-4" />
-        </Button>
+        </Button></Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{scenario.title}</h1>
           <p className="text-muted-foreground">{scenario.description}</p>
@@ -515,3 +522,5 @@ export function SituationPractice({ scenarioId, onBack }: SituationPracticeProps
     </div>
   )
 }
+
+export default SituationPractice

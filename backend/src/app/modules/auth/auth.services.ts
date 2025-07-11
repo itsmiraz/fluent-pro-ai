@@ -1,129 +1,161 @@
-import httpStatus from 'http-status';
-import AppError from '../../errors/AppError';
-import { TUser } from '../users/user.interface';
-import { AdminUser } from '../users/user.model';
-import config from '../../config';
-import { createToken } from './auth.util';
+// import crypto from 'crypto';
+// import httpStatus from 'http-status';
+// import AppError from '../../errors/AppError';
+// import { TUser } from '../users/user.interface';
+// import { createToken } from './auth.util';
+// import config from '../../config';
+// import { UserModel } from '../users/user.model';
+// // import { sendEmail } from '../../utils/sendEmail';
 
-const adminLogin = async (payload: TUser) => {
-  const adminUser = await AdminUser.findOne({ email: payload.email }).select(
-    '+password',
-  );
+// const signup = async (payload: TUser) => {
+//   const existingUser = await UserModel.findOne({
+//     $or: [{ email: payload.email }, { username: payload.username }],
+//   });
 
-  if (!adminUser) {
-    throw new AppError(404, 'User Not Found');
-  }
-  if (adminUser.role !== 'admin') {
-    throw new AppError(403, 'Access Denied');
-  }
+//   if (existingUser) {
+//     throw new AppError(
+//       httpStatus.CONFLICT,
+//       'Admin user with this email or username already exists',
+//     );
+//   }
 
-  const isPasswordMatched = await AdminUser.isPasswordMatched(
-    payload.password,
-    adminUser.password,
-  );
-  if (!isPasswordMatched) {
-    throw new AppError(httpStatus.FORBIDDEN, 'Incorrect Password');
-  }
+//   // Generate email verification token (expires in 1 day)
+//   const verificationToken = crypto.randomBytes(32).toString('hex');
+//   const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  const jwtPayload = {
-    email: adminUser.email,
-    role: adminUser.role,
-  };
+//   const newUser = new UserModel({
+//     username: payload.username,
+//     email: payload.email,
+//     password: payload.password,
+//     isVerified: false,
+//     verificationToken,
+//     verificationTokenExpiry,
+//   });
 
-  const accessToken = createToken(
-    jwtPayload,
-    config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string,
-  );
+//   await newUser.save();
 
-  const refreshToken = createToken(
-    jwtPayload,
-    config.jwt_refresh_secret as string,
-    config.jwt_refresh_expires_in as string,
-  );
+//   // Send verification email
+//   const verifyUrl = `${config.client_base_url}/verify-email?token=${verificationToken}`;
+//   const message = `
+//     <p>Please verify your email by clicking the link below:</p>
+//     <a href="${verifyUrl}">${verifyUrl}</a>
+//     <p>This link expires in 24 hours.</p>
+//   `;
 
-  return {
-    accessToken,
-    refreshToken,
-    user: adminUser,
-  };
-};
+//   // await sendEmail(newUser.email, 'Verify Your Email', message);
 
-const superAdminLogin = async (payload: TUser) => {
-  const adminUser = await AdminUser.findOne({ email: payload.email }).select(
-    '+password',
-  );
+//   newUser.password = ''; // hide password
+//   // newUser.verificationToken = undefined;
+//   // newUser.verificationTokenExpiry = undefined;
 
-  if (!adminUser) {
-    throw new AppError(404, 'User Not Found');
-  }
-  if (adminUser.role !== 'superadmin') {
-    throw new AppError(403, 'Access Denied');
-  }
+//   return newUser;
+// };
 
-  const isPasswordMatched = await AdminUser.isPasswordMatched(
-    payload.password,
-    adminUser.password,
-  );
+// const signin = async (payload: TUser) => {
+//   const adminUser = await UserModel.findOne({ email: payload.email }).select(
+//     '+password +isVerified',
+//   );
 
-  if (!isPasswordMatched) {
-    throw new AppError(httpStatus.FORBIDDEN, 'Incorrect Password');
-  }
+//   if (!adminUser) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'User Not Found');
+//   }
+//   if (!adminUser.isVerified) {
+//     throw new AppError(httpStatus.FORBIDDEN, 'Email not verified');
+//   }
+//   if (adminUser.role !== 'admin' && adminUser.role !== 'superadmin') {
+//     throw new AppError(httpStatus.FORBIDDEN, 'Access Denied');
+//   }
 
-  const jwtPayload = {
-    email: adminUser.email,
-    role: adminUser.role,
-  };
+//   const isPasswordMatched = await AdminUser.isPasswordMatched(
+//     payload.password,
+//     adminUser.password,
+//   );
+//   if (!isPasswordMatched) {
+//     throw new AppError(httpStatus.FORBIDDEN, 'Incorrect Password');
+//   }
 
-  const accessToken = createToken(
-    jwtPayload,
-    config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string,
-  );
+//   const jwtPayload = {
+//     email: adminUser.email,
+//     role: adminUser.role,
+//   };
 
-  const refreshToken = createToken(
-    jwtPayload,
-    config.jwt_refresh_secret as string,
-    config.jwt_refresh_expires_in as string,
-  );
+//   const accessToken = createToken(
+//     jwtPayload,
+//     config.jwt_access_secret as string,
+//     config.jwt_access_expires_in as string,
+//   );
 
-  return {
-    accessToken,
-    refreshToken,
-    user: adminUser,
-  };
-};
+//   const refreshToken = createToken(
+//     jwtPayload,
+//     config.jwt_refresh_secret as string,
+//     config.jwt_refresh_expires_in as string,
+//   );
 
-const createAdminUser = async (payload: TUser) => {
-  // Check if a user with this email or username already exists
-  const existingUser = await AdminUser.findOne({
-    $or: [{ email: payload.email }, { username: payload.username }],
-  });
+//   return {
+//     accessToken,
+//     refreshToken,
+//     user: adminUser,
+//   };
+// };
 
-  if (existingUser) {
-    throw new AppError(
-      httpStatus.CONFLICT,
-      'Admin user with this email or username already exists',
-    );
-  }
+// const verifyEmail = async (token: string) => {
+//   if (!token) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'Verification token is required');
+//   }
 
-  // Create new admin user with role 'admin' by default or use provided role if valid
-  const newAdmin = new AdminUser({
-    username: payload.username,
-    email: payload.email,
-    password: payload.password,
-    role: 'admin',
-  });
+//   const user = await AdminUser.findOne({
+//     verificationToken: token,
+//     verificationTokenExpiry: { $gt: new Date() },
+//   });
 
-  await newAdmin.save();
+//   if (!user) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'Invalid or expired verification token');
+//   }
 
-  // Remove password before returning
-  newAdmin.password = '';
+//   user.isVerified = true;
+//   user.verificationToken = undefined;
+//   user.verificationTokenExpiry = undefined;
 
-  return newAdmin;
-};
-export const AuthServices = {
-  superAdminLogin,
-  adminLogin,
-  createAdminUser
-};
+//   await user.save();
+// };
+
+// const forgotPassword = async (email: string) => {
+//   if (!email) {
+//     throw new AppError(httpStatus.BAD_REQUEST, 'Email is required');
+//   }
+
+//   const user = await AdminUser.findOne({ email });
+//   if (!user) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+//   }
+//   if (!user.isVerified) {
+//     throw new AppError(httpStatus.FORBIDDEN, 'Email not verified');
+//   }
+
+//   const resetToken = crypto.randomBytes(32).toString('hex');
+//   const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+
+//   user.passwordResetToken = resetToken;
+//   user.passwordResetTokenExpiry = resetTokenExpiry;
+
+//   await user.save();
+
+//   const resetUrl = `${config.client_base_url}/reset-password?token=${resetToken}`;
+//   const message = `
+//     <p>You requested a password reset. Click the link below to reset your password:</p>
+//     <a href="${resetUrl}">${resetUrl}</a>
+//     <p>If you did not request this, please ignore this email.</p>
+//   `;
+
+//   await sendEmail(user.email, 'Password Reset Request', message);
+// };
+
+// export const AuthServices = {
+//   signup,
+//   signin,
+//   verifyEmail,
+//   forgotPassword,
+//   adminLogin: signin,      // reuse signin for adminLogin
+//   superAdminLogin: signin, // reuse signin for superAdminLogin (check role inside signin)
+//   createAdminUser: signup, // reuse signup for createAdminUser
+// };
