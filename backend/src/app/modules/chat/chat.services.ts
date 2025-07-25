@@ -16,6 +16,10 @@ import axios from "axios";
   return response.data;
 };
 
+
+
+
 export const ChatServices = {
     chatWithOllama
 }
+

@@ -4,6 +4,7 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/not-found';
 import router from './app/routes/routes';
 import cookieParser from 'cookie-parser';
+import axios from 'axios';
 
 const app: Application = express();
 
@@ -25,6 +26,9 @@ app.use(
 app.use(cookieParser());
 // Application Routes
 app.use('/api', router);
+
+
+
 
 app.get('/test', (req: Request, res: Response) => {
   res.send('Hello World!');
