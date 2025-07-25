@@ -20,15 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VoiceModal } from "@/components/voice-modal";
-// import type { OnboardingData } from "@/types"
-import {
-  OnboardingFlow,
-  type OnboardingData,
-} from "@/components/onboarding/onboarding-flow";
+import { VoiceModal } from "@/app/(dashboard)/dashboard/_components/voice-modal";
+import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType";
 
 interface TalkWithAIContentProps {
-  onboardingData?: OnboardingData;
+  onboardingData?: TOnboardingData;
 }
 
 const TalkWithAi = ({ onboardingData }: TalkWithAIContentProps = {}) => {
@@ -48,7 +44,7 @@ const TalkWithAi = ({ onboardingData }: TalkWithAIContentProps = {}) => {
     },
   ]);
 
-  function getPersonalizedWelcome(onboardingData?: OnboardingData) {
+  function getPersonalizedWelcome(onboardingData?: TOnboardingData) {
     if (!onboardingData) {
       return "Welcome to Talk with AI! I'm your personal conversation partner. Let's practice speaking together!";
     }
@@ -80,7 +76,7 @@ const TalkWithAi = ({ onboardingData }: TalkWithAIContentProps = {}) => {
     }
   }
 
-  const getPersonalizedStats = (onboardingData?: OnboardingData) => {
+  const getPersonalizedStats = (onboardingData?: TOnboardingData) => {
     if (!onboardingData) {
       return {
         todayMinutes: 25,

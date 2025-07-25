@@ -3,7 +3,7 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import type { OnboardingData } from "@/types"
+import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType"
 
 interface Scenario {
   id: string
@@ -16,11 +16,11 @@ interface ScenarioSelectorProps {
   isOpen: boolean
   onClose: () => void
   onSelect: (scenario: Scenario) => void
-  onboardingData?: OnboardingData
+  onboardingData?: TOnboardingData
 }
 
 export function ScenarioSelector({ isOpen, onClose, onSelect, onboardingData }: ScenarioSelectorProps) {
-  const getScenarios = (onboardingData?: OnboardingData): Scenario[] => {
+  const getScenarios = (onboardingData?: TOnboardingData): Scenario[] => {
     if (!onboardingData) {
       return [
         {

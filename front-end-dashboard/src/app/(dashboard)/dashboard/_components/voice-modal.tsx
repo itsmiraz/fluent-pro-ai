@@ -5,13 +5,13 @@ import { Mic, X, Volume2, RotateCcw, Shuffle, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { ScenarioSelector } from "@/components/scenario-selector"
-import type { OnboardingData } from "@/types"
+import { ScenarioSelector } from "@/app/(dashboard)/dashboard/_components/scenario-selector"
+import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType"
 
 interface VoiceModalProps {
   isOpen: boolean
   onClose: () => void
-  onboardingData?: OnboardingData
+  onboardingData?: TOnboardingData
 }
 
 interface Scenario {
@@ -37,10 +37,10 @@ export function VoiceModal({ isOpen, onClose, onboardingData }: VoiceModalProps)
   >([])
 
   const waveformRef = useRef<HTMLDivElement>(null)
-  const animationRef = useRef<number>()
+  const animationRef = useRef<number|null>(null)
 
   // Generate scenario based on learning goal
-  const generateScenario = (onboardingData?: OnboardingData): Scenario => {
+  const generateScenario = (onboardingData?: TOnboardingData): Scenario => {
     if (!onboardingData) {
       return {
         id: "general",

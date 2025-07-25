@@ -2,19 +2,19 @@
 
 import { useState } from "react"
 import { Check, Clock, Play } from "lucide-react"
-import type { OnboardingData } from "@/types/onboarding-data" // Assuming OnboardingData is defined in this file
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType"
 
 interface DailyPracticePanelProps {
-  onboardingData?: OnboardingData
+  onboardingData?: TOnboardingData
 }
 
 export function DailyPracticePanel({ onboardingData }: DailyPracticePanelProps = {}) {
-  const getPersonalizedTasks = (onboardingData?: OnboardingData) => {
+  const getPersonalizedTasks = (onboardingData?: TOnboardingData) => {
     if (!onboardingData) {
       return [
         { id: 1, title: "3-Minute Speaking Recording", completed: true, xp: 50 },

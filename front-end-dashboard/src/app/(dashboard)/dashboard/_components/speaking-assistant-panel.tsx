@@ -9,17 +9,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { VoiceModal } from "@/components/voice-modal"
-import type { OnboardingData } from "@/types"
+import { VoiceModal } from "@/app/(dashboard)/dashboard/_components/voice-modal"
+import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType"
 
 interface SpeakingAssistantPanelProps {
-  onboardingData?: OnboardingData
+  onboardingData?: TOnboardingData
 }
 
 export function SpeakingAssistantPanel({ onboardingData }: SpeakingAssistantPanelProps = {}) {
   const [inputText, setInputText] = useState("")
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
-  const [chatMessages, setChatMessages] = useState([
+  const [chatMessages, setChatMessages] = useState< { id: number; type: string; content: string; timestamp: Date }[]>([
     {
       id: 1,
       type: "ai" as const,
@@ -28,7 +28,7 @@ export function SpeakingAssistantPanel({ onboardingData }: SpeakingAssistantPane
     },
   ])
 
-  function getPersonalizedWelcome(onboardingData?: OnboardingData) {
+  function getPersonalizedWelcome(onboardingData?: TOnboardingData) {
     if (!onboardingData) {
       return "Hi! I'm your AI speaking coach. Let's practice some conversations together!"
     }
@@ -105,10 +105,10 @@ export function SpeakingAssistantPanel({ onboardingData }: SpeakingAssistantPane
           {/* Chat Messages */}
           <div className="flex-1 space-y-3 overflow-y-auto max-h-64">
             {chatMessages.map((message) => (
-              <div key={message.id} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+              <div key={message.id} className={`flex ${message.type === "ai" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                    message.type === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                    message.type === "ai" ? "bg-primary text-primary-foreground" : "bg-muted"
                   }`}
                 >
                   {message.content}

@@ -81,7 +81,7 @@ interface GoalSelectionProps {
   onGoalSelect: (goal: LearningGoal | { id: string; title: string; description: string; custom: true }) => void
 }
 
-export function GoalSelection({ onGoalSelect }: GoalSelectionProps) {
+export const GoalSelection=({ onGoalSelect }: GoalSelectionProps)=> {
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null)
   const [showOtherInput, setShowOtherInput] = useState(false)
   const [customGoal, setCustomGoal] = useState("")
@@ -241,3 +241,5 @@ export function GoalSelection({ onGoalSelect }: GoalSelectionProps) {
     </div>
   )
 }
+
+

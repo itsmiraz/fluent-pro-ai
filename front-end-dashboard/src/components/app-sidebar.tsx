@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const menuItems = [
   {
@@ -104,14 +105,7 @@ export function AppSidebar({
         document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isMobile, mobileOpen, onMobileClose]);
-
-  const handleMenuClick = (key: string) => {
-    setActiveView(key);
-    if (isMobile) {
-      onMobileClose();
-    }
-  };
-
+const pathname = usePathname();
   if (isMobile) {
     return (
       <>
@@ -164,8 +158,7 @@ export function AppSidebar({
               </div>
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = activeView === item.key;
-
+const isActive = pathname.includes(item.link);
                 return (
                   <Link key={item.key} href={item.link}>
                     <Button
@@ -260,10 +253,10 @@ export function AppSidebar({
           </div>
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeView === item.key;
+           const isActive = pathname.includes(item.link);
 
             return (
-              <Link key={item.key} href={item.link}>
+              <Link  prefetch={true} key={item.key} href={item.link}>
                 <Button
                   variant="ghost"
                   className={cn(
@@ -302,20 +295,21 @@ export function AppSidebar({
 
       {/* Desktop Settings */}
       <div className="p-2 border-t border-border">
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start gap-2 h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            activeView === "settings" &&
-              "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
-            collapsed && "justify-center px-0"
-          )}
-          onClick={() => setActiveView("settings")}
-          title={collapsed ? "Settings" : undefined}
-        >
-          <Settings className="h-4 w-4 flex-shrink-0" />
-          {!collapsed && <span className="truncate">Settings</span>}
-        </Button>
+        <Link href={"/settings"}>
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start gap-2 h-10 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              activeView === "settings" &&
+                "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
+              collapsed && "justify-center px-0"
+            )}
+            title={collapsed ? "Settings" : undefined}
+          >
+            <Settings className="h-4 w-4 flex-shrink-0" />
+            {!collapsed && <span className="truncate">Settings</span>}
+          </Button>
+        </Link>
       </div>
     </div>
   );

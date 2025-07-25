@@ -1,10 +1,10 @@
 "use client"
 
-import { DailyPracticePanel } from "@/components/daily-practice-panel"
-import { FluencyOverviewPanel } from "@/components/fluency-overview-panel"
-import { SpeakingAssistantPanel } from "@/components/speaking-assistant-panel"
-import { LearningProgressPanel } from "@/components/learning-progress-panel"
-import { MotivationPanel } from "@/components/motivation-panel"
+import { DailyPracticePanel } from "@/app/(dashboard)/dashboard/_components/daily-practice-panel"
+import { FluencyOverviewPanel } from "@/app/(dashboard)/dashboard/_components/fluency-overview-panel"
+import { SpeakingAssistantPanel } from "@/app/(dashboard)/dashboard/_components/speaking-assistant-panel"
+import { LearningProgressPanel } from "@/app/(dashboard)/dashboard/_components/learning-progress-panel"
+import { MotivationPanel } from "@/app/(dashboard)/dashboard/_components/motivation-panel"
 
 export function DashboardContent() {
   return (

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   MessageCircle,
@@ -9,11 +9,11 @@ import {
   PenTool,
   Target,
   Sparkles,
-} from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import type { OnboardingData } from "@/components/onboarding/onboarding-flow"
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType";
 
 const goalIcons = {
   "daily-conversation": MessageCircle,
@@ -23,7 +23,7 @@ const goalIcons = {
   "public-speaking": Presentation,
   "writing-email": PenTool,
   custom: Target,
-}
+};
 
 const goalColors = {
   "daily-conversation": "text-blue-600 bg-blue-50 dark:bg-blue-950",
@@ -33,22 +33,26 @@ const goalColors = {
   "public-speaking": "text-red-600 bg-red-50 dark:bg-red-950",
   "writing-email": "text-teal-600 bg-teal-50 dark:bg-teal-950",
   custom: "text-gray-600 bg-gray-50 dark:bg-gray-950",
-}
+};
 
 const levelColors = {
   beginner: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   intermediate: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  advanced: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-}
+  advanced:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+};
 
 interface PersonalizedWelcomePanelProps {
-  onboardingData: OnboardingData
+  onboardingData: TOnboardingData;
 }
 
-export function PersonalizedWelcomePanel({ onboardingData }: PersonalizedWelcomePanelProps) {
-  const { goal, level } = onboardingData
-  const Icon = goalIcons[goal.id as keyof typeof goalIcons] || Target
-  const colorClasses = goalColors[goal.id as keyof typeof goalColors] || goalColors.custom
+export function PersonalizedWelcomePanel({
+  onboardingData,
+}: PersonalizedWelcomePanelProps) {
+  const { goal, level } = onboardingData || {};
+  const Icon = goalIcons[goal?.id as keyof typeof goalIcons] || Target;
+  const colorClasses =
+    goalColors[goal?.id as keyof typeof goalColors] || goalColors.custom;
 
   return (
     <Card className="relative overflow-hidden">
@@ -57,15 +61,21 @@ export function PersonalizedWelcomePanel({ onboardingData }: PersonalizedWelcome
         <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
           {/* Icon and Goal Info */}
           <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center ${colorClasses}`}>
+            <div
+              className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center ${colorClasses}`}
+            >
               <Icon className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Personalized for you</span>
+                <span className="text-sm font-medium text-primary">
+                  Personalized for you
+                </span>
               </div>
-              <h2 className="text-lg md:text-xl font-bold mb-1">Ready to master {goal.title.toLowerCase()}?</h2>
+              <h2 className="text-lg md:text-xl font-bold mb-1">
+                Ready to master {goal?.title?.toLowerCase()}?
+              </h2>
               <p className="text-sm text-muted-foreground">
                 Your dashboard is now customized for {level} level learners
               </p>
@@ -74,8 +84,11 @@ export function PersonalizedWelcomePanel({ onboardingData }: PersonalizedWelcome
 
           {/* Level Badge and Action */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
-            <Badge variant="secondary" className={`${levelColors[level]} font-medium`}>
-              {level.charAt(0).toUpperCase() + level.slice(1)} Level
+            <Badge
+              variant="secondary"
+              className={`${levelColors[level]} font-medium`}
+            >
+              {level?.charAt(0)?.toUpperCase() + level?.slice(1)} Level
             </Badge>
             <Button variant="outline" size="sm" className="bg-transparent">
               <Target className="w-4 h-4 mr-2" />
@@ -101,5 +114,5 @@ export function PersonalizedWelcomePanel({ onboardingData }: PersonalizedWelcome
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

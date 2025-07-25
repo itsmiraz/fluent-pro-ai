@@ -14,18 +14,18 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react"
-import type { OnboardingData } from "@/types/onboarding-data" // Declare the OnboardingData variable
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType"
 
 interface LearningProgressPanelProps {
-  onboardingData?: OnboardingData
+  onboardingData?: TOnboardingData
 }
 
 export function LearningProgressPanel({ onboardingData }: LearningProgressPanelProps = {}) {
-  const getPersonalizedStats = (onboardingData?: OnboardingData) => {
+  const getPersonalizedStats = (onboardingData?: TOnboardingData) => {
     if (!onboardingData) {
       return {
         vocabulary: { learned: 35, target: 50, icon: BookOpen },

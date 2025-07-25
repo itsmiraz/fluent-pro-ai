@@ -3,7 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { baseApi } from "./api/baseApi";
 import storage from "redux-persist/lib/storage";
 import authReducer from "./feature/auth/authSlice";
-
+import onboardingReducer from "./feature/onBoarding/onBoardingSlice";
 
 import {
   persistReducer,
@@ -26,7 +26,7 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,
- 
+   onboarding: onboardingReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

@@ -1,18 +1,15 @@
 "use client";
 import type React from "react";
-import type { Metadata } from "next";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useEffect, useState } from "react";
-import { OnboardingData } from "@/components/onboarding/onboarding-flow";
 import { TopBar } from "@/components/top-bar";
-import { ReduxProvider } from "@/lib/providers";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
+import {
+  resetOnboardingData,
+  setOnboardingData,
+} from "@/redux/feature/onBoarding/onBoardingSlice";
 
-// export const metadata: Metadata = {
-//   title: "FluentAI - English Learning Dashboard",
-//   description: "AI-powered English fluency learning platform",
-//     generator: 'v0.dev'
-// }
 
 export default function RootLayout({
   children,
@@ -28,38 +25,40 @@ export default function RootLayout({
   const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(
-    null
-  );
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ name?: string; email: string } | null>(
-    null
-  );
+ 
+
+  const { onboardingData } = useAppSelector((state) => state.onboarding);
+
+  const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    // Check for existing authentication
-    const savedAuth = localStorage.getItem("fluentai-auth");
-    if (savedAuth) {
-      try {
-        const parsed = JSON.parse(savedAuth);
-        setUser(parsed);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Error parsing auth data:", error);
-      }
-    }
+    console.log("came here");
+    setLoading(true);
 
     const savedData = localStorage.getItem("fluentai-onboarding");
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setOnboardingData(parsed);
-        setShowOnboarding(false);
-      } catch (error) {
-        console.error("Error parsing onboarding data:", error);
+    console.log("savedData", savedData);
+    console.log("onboardingData", onboardingData);
+    if (!onboardingData) {
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          if (parsed) {
+            dispatch(setOnboardingData(parsed));
+            setLoading(false);
+          } else {
+            router.push("/onboarding-flow");
+          }
+        } catch (error) {
+          console.error("Error parsing onboarding data:", error);
+          router.push("/onboarding-flow");
+        }
+      } else {
+        router.push("/onboarding-flow");
       }
+    } else {
+      setLoading(false);
     }
-  }, []);
+  }, [dispatch, router]);
   const handleMobileClose = () => {
     setMobileMenuOpen(false);
   };
@@ -72,10 +71,7 @@ export default function RootLayout({
     }
   };
   const handleSignOut = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    setOnboardingData(null);
-    setShowOnboarding(true);
+    dispatch(resetOnboardingData());
     // Clear localStorage
     localStorage.removeItem("fluentai-auth");
     localStorage.removeItem("fluentai-onboarding");
@@ -111,7 +107,7 @@ export default function RootLayout({
           />
           <main className="flex-1 p-3 md:p-4 lg:p-6 overflow-auto">
             {" "}
-            {children}
+            {loading ? "Loading..." : <>{children}</>}
           </main>
         </div>
       </div>

@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react";
 import {
   ArrowLeft,
   Play,
@@ -22,15 +22,18 @@ import {
   Star,
   Send,
   Heart,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import PlaceHolder from '../../../../../src/public/placeholder.svg'
 
 // Mock video data (same as in video-lessons-content.tsx)
 const videoLessons = [
@@ -66,7 +69,7 @@ const videoLessons = [
       "Welcome to this comprehensive guide on English pronunciation. Today we'll be covering the fundamentals that every English learner needs to know...",
   },
   // Add other videos here for related videos section
-]
+];
 
 // Mock comments data
 const comments = [
@@ -74,7 +77,8 @@ const comments = [
     id: 1,
     user: "Alex Chen",
     avatar: "/placeholder.svg?height=32&width=32",
-    content: "This is exactly what I needed! The pronunciation tips are so helpful. Thank you Sarah!",
+    content:
+      "This is exactly what I needed! The pronunciation tips are so helpful. Thank you Sarah!",
     likes: 45,
     replies: 3,
     timeAgo: "2 days ago",
@@ -84,7 +88,8 @@ const comments = [
     id: 2,
     user: "Maria Rodriguez",
     avatar: "/placeholder.svg?height=32&width=32",
-    content: "Could you make a video about American vs British pronunciation differences?",
+    content:
+      "Could you make a video about American vs British pronunciation differences?",
     likes: 23,
     replies: 1,
     timeAgo: "1 week ago",
@@ -94,13 +99,14 @@ const comments = [
     id: 3,
     user: "John Smith",
     avatar: "/placeholder.svg?height=32&width=32",
-    content: "The IPA section was particularly useful. I've been struggling with those symbols for months!",
+    content:
+      "The IPA section was particularly useful. I've been struggling with those symbols for months!",
     likes: 67,
     replies: 5,
     timeAgo: "3 days ago",
     isLiked: false,
   },
-]
+];
 
 // Mock related videos
 const relatedVideos = [
@@ -131,83 +137,85 @@ const relatedVideos = [
     instructor: "David Rodriguez",
     uploadDate: "2024-01-12",
   },
-]
+];
 
 interface VideoPlayerPageProps {
-  videoId: number
-  onBack: () => void
-  onVideoSelect: (videoId: number) => void
+  videoId: number;
+  onBack: () => void;
+  onVideoSelect: (videoId: number) => void;
 }
+const VideoPlayerPage = ({ onBack }: VideoPlayerPageProps) => {
+  const params = useParams();
+  const videoId = params.id;
 
-export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerPageProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(942) // 15:42 in seconds
-  const [volume, setVolume] = useState(1)
-  const [isMuted, setIsMuted] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [showControls, setShowControls] = useState(true)
-  const [isLiked, setIsLiked] = useState(false)
-  const [isDisliked, setIsDisliked] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState(false)
-  const [newComment, setNewComment] = useState("")
-  const [commentsData, setCommentsData] = useState(comments)
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(942); // 15:42 in seconds
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [commentsData, setCommentsData] = useState(comments);
 
-  const videoRef = useRef<HTMLDivElement>(null)
-  const controlsTimeoutRef = useRef<NodeJS.Timeout|null>(null)
+  const videoRef = useRef<HTMLDivElement>(null);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const video = videoLessons.find((v) => v.id === videoId) || videoLessons[0]
+  const video = videoLessons.find((v) => String(v?.id) === videoId) || videoLessons[0];
 
   useEffect(() => {
     // Simulate video progress
     if (isPlaying) {
       const interval = setInterval(() => {
-        setCurrentTime((prev) => Math.min(prev + 1, duration))
-      }, 1000)
-      return () => clearInterval(interval)
+        setCurrentTime((prev) => Math.min(prev + 1, duration));
+      }, 1000);
+      return () => clearInterval(interval);
     }
-  }, [isPlaying, duration])
+  }, [isPlaying, duration]);
 
   const togglePlay = () => {
-    setIsPlaying(!isPlaying)
-  }
+    setIsPlaying(!isPlaying);
+  };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted)
-  }
+    setIsMuted(!isMuted);
+  };
 
   const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen)
-  }
+    setIsFullscreen(!isFullscreen);
+  };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const newTime = (clickX / rect.width) * duration
-    setCurrentTime(newTime)
-  }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const newTime = (clickX / rect.width) * duration;
+    setCurrentTime(newTime);
+  };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   const formatViews = (views: number) => {
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`
-    return views.toString()
-  }
+    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
+    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
+    return views.toString();
+  };
 
   const handleLike = () => {
-    setIsLiked(!isLiked)
-    if (isDisliked) setIsDisliked(false)
-  }
+    setIsLiked(!isLiked);
+    if (isDisliked) setIsDisliked(false);
+  };
 
   const handleDislike = () => {
-    setIsDisliked(!isDisliked)
-    if (isLiked) setIsLiked(false)
-  }
+    setIsDisliked(!isDisliked);
+    if (isLiked) setIsLiked(false);
+  };
 
   const handleCommentSubmit = () => {
     if (newComment.trim()) {
@@ -220,11 +228,11 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
         replies: 0,
         timeAgo: "Just now",
         isLiked: false,
-      }
-      setCommentsData([comment, ...commentsData])
-      setNewComment("")
+      };
+      setCommentsData([comment, ...commentsData]);
+      setNewComment("");
     }
-  }
+  };
 
   const handleCommentLike = (commentId: number) => {
     setCommentsData((prev) =>
@@ -235,18 +243,24 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
               isLiked: !comment.isLiked,
               likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
             }
-          : comment,
-      ),
-    )
-  }
+          : comment
+      )
+    );
+  };
 
   return (
     <div className="space-y-6">
       {/* Back Button */}
-      <Button variant="outline" onClick={onBack} className="mb-4 bg-transparent">
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Lessons
-      </Button>
+      <Link href={"/video-lessons"}>
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="mb-4 bg-transparent"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Lessons
+        </Button>
+      </Link>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Video Section */}
@@ -261,16 +275,16 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
               onMouseEnter={() => setShowControls(true)}
               onMouseLeave={() => {
                 if (controlsTimeoutRef.current) {
-                  clearTimeout(controlsTimeoutRef.current)
+                  clearTimeout(controlsTimeoutRef.current);
                 }
                 controlsTimeoutRef.current = setTimeout(() => {
-                  if (isPlaying) setShowControls(false)
-                }, 2000)
+                  if (isPlaying) setShowControls(false);
+                }, 2000);
               }}
             >
               {/* Video Thumbnail/Player */}
               <img
-                src={video.videoUrl || "/placeholder.svg"}
+                src={video.videoUrl || PlaceHolder}
                 alt={video.title}
                 className="w-full h-full object-cover"
               />
@@ -278,7 +292,11 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
               {/* Play/Pause Overlay */}
               {!isPlaying && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                  <Button size="lg" className="h-16 w-16 rounded-full bg-white/90 hover:bg-white" onClick={togglePlay}>
+                  <Button
+                    size="lg"
+                    className="h-16 w-16 rounded-full bg-white/90 hover:bg-white"
+                    onClick={togglePlay}
+                  >
                     <Play className="h-8 w-8 text-black ml-1" />
                   </Button>
                 </div>
@@ -291,7 +309,10 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                 }`}
               >
                 {/* Progress Bar */}
-                <div className="w-full h-1 bg-white/30 rounded-full mb-4 cursor-pointer" onClick={handleProgressClick}>
+                <div
+                  className="w-full h-1 bg-white/30 rounded-full mb-4 cursor-pointer"
+                  onClick={handleProgressClick}
+                >
                   <div
                     className="h-full bg-red-500 rounded-full"
                     style={{ width: `${(currentTime / duration) * 100}%` }}
@@ -301,12 +322,30 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                 {/* Control Buttons */}
                 <div className="flex items-center justify-between text-white">
                   <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={togglePlay}>
-                      {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-white/20"
+                      onClick={togglePlay}
+                    >
+                      {isPlaying ? (
+                        <Pause className="h-5 w-5" />
+                      ) : (
+                        <Play className="h-5 w-5" />
+                      )}
                     </Button>
 
-                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={toggleMute}>
-                      {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-white/20"
+                      onClick={toggleMute}
+                    >
+                      {isMuted ? (
+                        <VolumeX className="h-5 w-5" />
+                      ) : (
+                        <Volume2 className="h-5 w-5" />
+                      )}
                     </Button>
 
                     <span className="text-sm">
@@ -315,7 +354,11 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-white/20"
+                    >
                       <Settings className="h-5 w-5" />
                     </Button>
 
@@ -346,7 +389,10 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                   <Clock className="h-4 w-4" />
                   {new Date(video.uploadDate).toLocaleDateString()}
                 </div>
-                <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                <Badge
+                  variant="outline"
+                  className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                >
                   {video.level}
                 </Badge>
               </div>
@@ -354,22 +400,40 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant={isLiked ? "default" : "outline"} size="sm" onClick={handleLike} className="gap-2">
+              <Button
+                variant={isLiked ? "default" : "outline"}
+                size="sm"
+                onClick={handleLike}
+                className="gap-2"
+              >
                 <ThumbsUp className="h-4 w-4" />
                 {formatViews(video.likes + (isLiked ? 1 : 0))}
               </Button>
 
-              <Button variant={isDisliked ? "default" : "outline"} size="sm" onClick={handleDislike} className="gap-2">
+              <Button
+                variant={isDisliked ? "default" : "outline"}
+                size="sm"
+                onClick={handleDislike}
+                className="gap-2"
+              >
                 <ThumbsDown className="h-4 w-4" />
                 {formatViews(video.dislikes + (isDisliked ? 1 : 0))}
               </Button>
 
-              <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 bg-transparent"
+              >
                 <Share className="h-4 w-4" />
                 Share
               </Button>
 
-              <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 bg-transparent"
+              >
                 <Download className="h-4 w-4" />
                 Download
               </Button>
@@ -394,7 +458,9 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={video.instructorAvatar || "/placeholder.svg"} />
+                    <AvatarImage
+                      src={video.instructorAvatar || "/placeholder.svg"}
+                    />
                     <AvatarFallback>
                       {video.instructor
                         .split(" ")
@@ -404,7 +470,9 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                   </Avatar>
                   <div className="flex-1">
                     <h3 className="font-semibold">{video.instructor}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">{video.instructorBio}</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {video.instructorBio}
+                    </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -429,7 +497,9 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
               <TabsContent value="description" className="mt-4">
                 <Card>
                   <CardContent className="p-4">
-                    <p className="text-sm leading-relaxed">{video.description}</p>
+                    <p className="text-sm leading-relaxed">
+                      {video.description}
+                    </p>
                     <div className="mt-4">
                       <h4 className="font-medium mb-2">Tags:</h4>
                       <div className="flex flex-wrap gap-2">
@@ -453,11 +523,15 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                           key={index}
                           className="flex items-center gap-3 p-2 rounded hover:bg-muted cursor-pointer"
                           onClick={() => {
-                            const [mins, secs] = chapter.time.split(":").map(Number)
-                            setCurrentTime(mins * 60 + secs)
+                            const [mins, secs] = chapter.time
+                              .split(":")
+                              .map(Number);
+                            setCurrentTime(mins * 60 + secs);
                           }}
                         >
-                          <span className="text-sm font-mono text-muted-foreground w-12">{chapter.time}</span>
+                          <span className="text-sm font-mono text-muted-foreground w-12">
+                            {chapter.time}
+                          </span>
                           <span className="text-sm">{chapter.title}</span>
                         </div>
                       ))}
@@ -469,7 +543,9 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
               <TabsContent value="transcript" className="mt-4">
                 <Card>
                   <CardContent className="p-4">
-                    <p className="text-sm leading-relaxed">{video.transcript}</p>
+                    <p className="text-sm leading-relaxed">
+                      {video.transcript}
+                    </p>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -478,7 +554,9 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
             {/* Comments Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">Comments ({commentsData.length})</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Comments ({commentsData.length})
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Add Comment */}
@@ -494,10 +572,18 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                       className="min-h-[80px]"
                     />
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setNewComment("")}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewComment("")}
+                      >
                         Cancel
                       </Button>
-                      <Button size="sm" onClick={handleCommentSubmit} disabled={!newComment.trim()}>
+                      <Button
+                        size="sm"
+                        onClick={handleCommentSubmit}
+                        disabled={!newComment.trim()}
+                      >
                         <Send className="h-4 w-4 mr-2" />
                         Comment
                       </Button>
@@ -512,14 +598,20 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                   {commentsData.map((comment) => (
                     <div key={comment.id} className="flex gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={comment.avatar || "/placeholder.svg"} />
+                        <AvatarImage
+                          src={comment.avatar || "/placeholder.svg"}
+                        />
                         <AvatarFallback>{comment.user[0]}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 space-y-2">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-sm">{comment.user}</span>
-                            <span className="text-xs text-muted-foreground">{comment.timeAgo}</span>
+                            <span className="font-medium text-sm">
+                              {comment.user}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {comment.timeAgo}
+                            </span>
                           </div>
                           <p className="text-sm">{comment.content}</p>
                         </div>
@@ -528,16 +620,30 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCommentLike(comment.id)}
-                            className={`gap-1 h-8 px-2 ${comment.isLiked ? "text-red-500" : ""}`}
+                            className={`gap-1 h-8 px-2 ${
+                              comment.isLiked ? "text-red-500" : ""
+                            }`}
                           >
-                            <Heart className={`h-3 w-3 ${comment.isLiked ? "fill-current" : ""}`} />
+                            <Heart
+                              className={`h-3 w-3 ${
+                                comment.isLiked ? "fill-current" : ""
+                              }`}
+                            />
                             {comment.likes}
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-8 px-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2"
+                          >
                             Reply
                           </Button>
                           {comment.replies > 0 && (
-                            <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-muted-foreground"
+                            >
                               View {comment.replies} replies
                             </Button>
                           )}
@@ -562,7 +668,7 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                 <div
                   key={relatedVideo.id}
                   className="flex gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
-                  onClick={() => onVideoSelect(relatedVideo.id)}
+                  // onClick={() => onVideoSelect(relatedVideo.id)}
                 >
                   <div className="relative flex-shrink-0">
                     <img
@@ -575,12 +681,18 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm line-clamp-2 mb-1">{relatedVideo.title}</h4>
-                    <p className="text-xs text-muted-foreground mb-1">{relatedVideo.instructor}</p>
+                    <h4 className="font-medium text-sm line-clamp-2 mb-1">
+                      {relatedVideo.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {relatedVideo.instructor}
+                    </p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>{formatViews(relatedVideo.views)} views</span>
                       <span>•</span>
-                      <span>{new Date(relatedVideo.uploadDate).toLocaleDateString()}</span>
+                      <span>
+                        {new Date(relatedVideo.uploadDate).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -599,7 +711,10 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
                   <span>Watched</span>
                   <span>{Math.round((currentTime / duration) * 100)}%</span>
                 </div>
-                <Progress value={(currentTime / duration) * 100} className="h-2" />
+                <Progress
+                  value={(currentTime / duration) * 100}
+                  className="h-2"
+                />
                 <p className="text-xs text-muted-foreground">
                   {formatTime(currentTime)} of {formatTime(duration)}
                 </p>
@@ -609,5 +724,6 @@ export function VideoPlayerPage({ videoId, onBack, onVideoSelect }: VideoPlayerP
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+export default VideoPlayerPage;
