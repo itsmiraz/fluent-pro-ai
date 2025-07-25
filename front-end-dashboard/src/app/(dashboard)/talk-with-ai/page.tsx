@@ -22,12 +22,11 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VoiceModal } from "@/app/(dashboard)/dashboard/_components/voice-modal";
 import { TOnboardingData } from "@/redux/feature/onBoarding/onBoardingType";
+import { useAppSelector } from "@/redux/hooks/hooks";
 
-interface TalkWithAIContentProps {
-  onboardingData?: TOnboardingData;
-}
 
-const TalkWithAi = ({ onboardingData }: TalkWithAIContentProps = {}) => {
+const TalkWithAi = () => {
+  const {onboardingData} = useAppSelector((state)=>state.onboarding)
   const [inputText, setInputText] = useState("");
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [activeConversation, setActiveConversation] = useState<string | null>(
@@ -39,7 +38,7 @@ const TalkWithAi = ({ onboardingData }: TalkWithAIContentProps = {}) => {
     {
       id: 121212,
       type: "ai" as const,
-      content: getPersonalizedWelcome(onboardingData),
+      content: getPersonalizedWelcome(onboardingData as TOnboardingData),
       timestamp: new Date(),
     },
   ]);
@@ -104,7 +103,7 @@ const TalkWithAi = ({ onboardingData }: TalkWithAIContentProps = {}) => {
     };
   };
 
-  const stats = getPersonalizedStats(onboardingData);
+  const stats = getPersonalizedStats(onboardingData as TOnboardingData);
 
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
@@ -627,7 +626,7 @@ const TalkWithAi = ({ onboardingData }: TalkWithAIContentProps = {}) => {
       <VoiceModal
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
-        onboardingData={onboardingData}
+        onboardingData={onboardingData as TOnboardingData}
       />
     </div>
   );

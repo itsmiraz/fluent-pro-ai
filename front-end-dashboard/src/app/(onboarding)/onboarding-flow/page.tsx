@@ -9,11 +9,8 @@ import { useState } from "react";
 import { setOnboardingData } from "@/redux/feature/onBoarding/onBoardingSlice";
 import { useRouter } from "next/navigation";
 
-interface OnboardingFlowProps {
-  onComplete: (data: { goal: GoalType; level: UserLevel }) => void;
-}
 
-const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
+const OnboardingFlow = () => {
   const dispatch = useDispatch<AppDispatch>();
   const selectedGoal = useSelector(
     (state: RootState) => state.onboarding.onboardingData?.goal

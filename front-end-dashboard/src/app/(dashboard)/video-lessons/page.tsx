@@ -198,10 +198,8 @@ const sortOptions = [
   "Duration",
 ];
 
-interface VideoLessonsContentProps {
-  onVideoSelect: (videoId: number) => void;
-}
-const VideoLessons = ({ onVideoSelect }: VideoLessonsContentProps) => {
+
+const VideoLessons = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedLevel, setSelectedLevel] = useState("All Levels");

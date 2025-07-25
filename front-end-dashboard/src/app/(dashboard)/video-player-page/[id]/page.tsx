@@ -139,12 +139,8 @@ const relatedVideos = [
   },
 ];
 
-interface VideoPlayerPageProps {
-  videoId: number;
-  onBack: () => void;
-  onVideoSelect: (videoId: number) => void;
-}
-const VideoPlayerPage = ({ onBack }: VideoPlayerPageProps) => {
+
+const VideoPlayerPage = () => {
   const params = useParams();
   const videoId = params.id;
 
@@ -254,7 +250,6 @@ const VideoPlayerPage = ({ onBack }: VideoPlayerPageProps) => {
       <Link href={"/video-lessons"}>
         <Button
           variant="outline"
-          onClick={onBack}
           className="mb-4 bg-transparent"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
