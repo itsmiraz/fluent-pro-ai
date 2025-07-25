@@ -135,7 +135,7 @@ const SituationPractice = () => {
             accuracy: Math.floor(Math.random() + 25) + 75,
             clarity: Math.floor(Math.random() * 25) + 75,
             vocabulary: Math.floor(Math.random() * 25) + 75,
-            detailsCovered: Math.floor(Math.random() * scenario?.expectedElements?.length) + 2,
+            detailsCovered: Math.floor(Math.random() * (scenario?.expectedElements?.length || 0)) + 2,
             totalDetails: scenario?.expectedElements.length,
             strengths: [
               "Good overall structure in your description",
