@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { useState } from "react";
 import { OnboardingData } from "@/components/onboarding/onboarding-flow";
 import { TopBar } from "@/components/top-bar";
+import { ReduxProvider } from "@/lib/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -63,43 +64,46 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex min-h-screen bg-background">
-            {/* Sidebar */}
-            <AppSidebar
-              activeView={
-                practiceScenarioId
-                  ? "situations"
-                  : selectedVideoId
-                  ? "video-lessons"
-                  : activeView
-              }
-              setActiveView={setActiveView}
-              collapsed={sidebarCollapsed}
-              isMobile={isMobile}
-              mobileOpen={mobileMenuOpen}
-              onMobileClose={handleMobileClose}
-            />
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0">
-              <TopBar
-                onToggleSidebar={handleToggleSidebar}
-                sidebarCollapsed={sidebarCollapsed}
+        <ReduxProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="flex min-h-screen bg-background">
+              {/* Sidebar */}
+              <AppSidebar
+                onToggle={() => {}}
+                activeView={
+                  practiceScenarioId
+                    ? "situations"
+                    : selectedVideoId
+                    ? "video-lessons"
+                    : activeView
+                }
+                setActiveView={setActiveView}
+                collapsed={sidebarCollapsed}
                 isMobile={isMobile}
-                onSignOut={handleSignOut}
+                mobileOpen={mobileMenuOpen}
+                onMobileClose={handleMobileClose}
               />
-              <main className="flex-1 p-3 md:p-4 lg:p-6 overflow-auto">
-                {" "}
-                {children}
-              </main>
+              {/* Main Content Area */}
+              <div className="flex-1 flex flex-col min-w-0">
+                <TopBar
+                  onToggleSidebar={handleToggleSidebar}
+                  sidebarCollapsed={sidebarCollapsed}
+                  isMobile={isMobile}
+                  onSignOut={handleSignOut}
+                />
+                <main className="flex-1 p-3 md:p-4 lg:p-6 overflow-auto">
+                  {" "}
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        </ThemeProvider>
+          </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

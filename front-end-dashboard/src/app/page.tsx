@@ -185,23 +185,23 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <AppSidebar
+      {/* <AppSidebar
         activeView={practiceScenarioId ? "situations" : selectedVideoId ? "video-lessons" : activeView}
         setActiveView={setActiveView}
         collapsed={sidebarCollapsed}
         isMobile={isMobile}
         mobileOpen={mobileMenuOpen}
         onMobileClose={handleMobileClose}
-      />
+      /> */}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <TopBar
+        {/* <TopBar
           onToggleSidebar={handleToggleSidebar}
           sidebarCollapsed={sidebarCollapsed}
           isMobile={isMobile}
           onSignOut={handleSignOut}
-        />
+        /> */}
         <main className="flex-1 p-3 md:p-4 lg:p-6 overflow-auto">{renderContent()}</main>
       </div>
     </div>
