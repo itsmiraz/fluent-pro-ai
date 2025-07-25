@@ -32,12 +32,9 @@ export default function RootLayout({
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    console.log("came here");
     setLoading(true);
 
     const savedData = localStorage.getItem("fluentai-onboarding");
-    console.log("savedData", savedData);
-    console.log("onboardingData", onboardingData);
     if (!onboardingData) {
       if (savedData) {
         try {
