@@ -29,8 +29,8 @@ async function main() {
       console.log(`Socket connected: ${socket.id}`);
 
       // You can access query parameters and auth here
-      const userEmail = socket.handshake.query.userEmail;
-      const token = socket.handshake.auth.token;
+      // const userEmail = socket.handshake.query.userEmail;
+      // const token = socket.handshake.auth.token;
 
       socket.on('chatMessage', async (payload) => {
         try {

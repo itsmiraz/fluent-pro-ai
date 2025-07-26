@@ -4,7 +4,6 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/not-found';
 import router from './app/routes/routes';
 import cookieParser from 'cookie-parser';
-import axios from 'axios';
 
 const app: Application = express();
 
