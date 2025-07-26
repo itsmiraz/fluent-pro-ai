@@ -54,7 +54,235 @@ type SpeechRecognitionType = typeof window extends {
  * - Handles real-time AI responses in streaming chunks
  * - Displays and optionally speaks AI responses
  */
+// Fixed ElevenLabs TTS Manager
+class ElevenLabsTTSManager {
+  private apiKey: string;
+  private voiceId: string;
+  private isPlaying = false;
+  private audioContext: AudioContext | null = null;
+  private audioQueue: ArrayBuffer[] = [];
+  private isProcessingQueue = false;
+  private textBuffer = '';
+  private bufferTimer: NodeJS.Timeout | null = null;
 
+  constructor(apiKey: string, voiceId = 'pNInz6obpgDQGcFmaJgB') {
+    this.apiKey = apiKey;
+    this.voiceId = voiceId;
+    console.log('TTS Manager initialized with API key:', apiKey ? 'Present' : 'Missing');
+  }
+
+  private async initAudioContext() {
+    if (this.audioContext) return;
+    
+    try {
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Resume audio context if suspended (required by browser policies)
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+      
+      console.log('Audio context initialized:', this.audioContext.state);
+    } catch (error) {
+      console.error('Audio context initialization failed:', error);
+    }
+  }
+
+  // Real-time streaming speech
+  async speak(text: string) {
+    if (!text.trim()) return;
+    
+    console.log('Speaking text:', text);
+
+    // Initialize audio context when first called (user interaction required)
+    await this.initAudioContext();
+
+    // Buffer text to form complete sentences
+    this.textBuffer += text;
+    
+    if (this.bufferTimer) {
+      clearTimeout(this.bufferTimer);
+    }
+
+    // Process buffer after short delay to accumulate complete words/sentences
+    this.bufferTimer = setTimeout(() => {
+      this.processTextBuffer();
+    }, 500); // Increased delay to prevent word repetition
+  }
+
+  private async processTextBuffer() {
+    if (!this.textBuffer.trim()) return;
+
+    const textToSpeak = this.textBuffer.trim();
+    this.textBuffer = '';
+
+    console.log('Processing text buffer:', textToSpeak);
+
+    // Skip if text is too short or just punctuation
+    if (textToSpeak.length < 2 || /^[^\w]*$/.test(textToSpeak)) {
+      console.log('Skipping short/punctuation text:', textToSpeak);
+      return;
+    }
+
+    try {
+      // Check if API key is present
+      if (!this.apiKey || this.apiKey === 'your-api-key-here') {
+        console.error('ElevenLabs API key is missing!');
+        return;
+      }
+
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': this.apiKey,
+        },
+        body: JSON.stringify({
+          text: textToSpeak,
+          model_id: 'eleven_monolingual_v1',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.8,
+            style: 0.0,
+            use_speaker_boost: true
+          }
+        }),
+      });
+
+      console.log('ElevenLabs response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('ElevenLabs API error:', response.status, errorText);
+        return;
+      }
+
+      const audioBuffer = await response.arrayBuffer();
+      console.log('Audio buffer received, size:', audioBuffer.byteLength);
+      
+      if (audioBuffer.byteLength > 0) {
+        this.audioQueue.push(audioBuffer);
+        this.processAudioQueue();
+      }
+
+    } catch (error) {
+      console.error('ElevenLabs TTS error:', error);
+    }
+  }
+
+  private async processAudioQueue() {
+    if (this.isProcessingQueue || this.audioQueue.length === 0) return;
+
+    console.log('Starting audio queue processing, queue length:', this.audioQueue.length);
+    
+    this.isProcessingQueue = true;
+    this.isPlaying = true;
+
+    while (this.audioQueue.length > 0) {
+      const audioBuffer = this.audioQueue.shift()!;
+      try {
+        await this.playAudioBuffer(audioBuffer);
+      } catch (error) {
+        console.error('Error playing audio buffer:', error);
+      }
+    }
+
+    this.isProcessingQueue = false;
+    this.isPlaying = false;
+    console.log('Audio queue processing completed');
+  }
+
+  private async playAudioBuffer(buffer: ArrayBuffer): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      if (!this.audioContext) {
+        await this.initAudioContext();
+        if (!this.audioContext) {
+          reject(new Error('Audio context not available'));
+          return;
+        }
+      }
+
+      // Ensure audio context is running
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+
+      try {
+        // Use the newer promise-based API if available
+        if (this.audioContext.decodeAudioData.length === 1) {
+          const audioBuffer = await this.audioContext.decodeAudioData(buffer.slice(0));
+          const source = this.audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(this.audioContext.destination);
+          
+          source.onended = () => {
+            console.log('Audio finished playing');
+            resolve();
+          };
+          
+          console.log('Playing audio buffer');
+          source.start(0);
+        } else {
+          // Fallback to callback-based API
+          this.audioContext.decodeAudioData(
+            buffer.slice(0),
+            (audioBuffer) => {
+              const source = this.audioContext!.createBufferSource();
+              source.buffer = audioBuffer;
+              source.connect(this.audioContext!.destination);
+              
+              source.onended = () => {
+                console.log('Audio finished playing');
+                resolve();
+              };
+              
+              console.log('Playing audio buffer (callback)');
+              source.start(0);
+            },
+            (error) => {
+              console.error('Audio decode error:', error);
+              reject(error);
+            }
+          );
+        }
+      } catch (error) {
+        console.error('Error in playAudioBuffer:', error);
+        reject(error);
+      }
+    });
+  }
+
+  stop() {
+    console.log('Stopping TTS');
+    
+    // Clear buffers and queues
+    this.textBuffer = '';
+    this.audioQueue = [];
+    this.isPlaying = false;
+    this.isProcessingQueue = false;
+    
+    if (this.bufferTimer) {
+      clearTimeout(this.bufferTimer);
+      this.bufferTimer = null;
+    }
+
+    // Stop audio context
+    if (this.audioContext?.state === 'running') {
+      this.audioContext.suspend();
+    }
+  }
+
+  resume() {
+    if (this.audioContext?.state === 'suspended') {
+      this.audioContext.resume();
+    }
+  }
+
+  get speaking() {
+    return this.isPlaying;
+  }
+}
 export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
   const [isListening, setIsListening] = useState(false);
   const [transcription, setTranscription] = useState("");
@@ -66,6 +294,26 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
   const [conversationHistory, setConversationHistory] = useState<
     ConversationMessage[]
   >([]);
+
+  // ElevenLabs TTS Manager
+  const ttsManagerRef = useRef<ElevenLabsTTSManager | null>(null);
+
+  // Initialize ElevenLabs TTS
+  useEffect(() => {
+    if (isOpen && !ttsManagerRef.current) {
+      const ELEVENLABS_API_KEY = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
+      
+      if (!ELEVENLABS_API_KEY) {
+        console.error('NEXT_PUBLIC_ELEVENLABS_API_KEY is not set in environment variables');
+        return;
+      }
+      
+      console.log('Initializing TTS manager...');
+      ttsManagerRef.current = new ElevenLabsTTSManager(ELEVENLABS_API_KEY);
+    }
+  }, [isOpen]);
+
+
  const SpeechRecognition =
   typeof window !== "undefined"
     ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -74,6 +322,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
   const recognitionRef = useRef<InstanceType<SpeechRecognitionType> | null>(
     null
   );
+  
   const lastFinalTranscriptRef = useRef("");
   const transcriptionArrRef = useRef<string[]>([]);
   const waveformRef = useRef<HTMLDivElement>(null);
@@ -100,10 +349,12 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
       animationRef.current && cancelAnimationFrame(animationRef.current);
     };
   }, [isListening]);
-
-  // Handle socket events
+  
+  // Handle socket events with proper state management
   useEffect(() => {
     if (!isOpen) return;
+
+    let fullResponseBuffer = ''; // Local variable to track full response
 
     initiateSocket({
       userEmail: "user@example.com",
@@ -112,26 +363,68 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
     const socket = getSocket();
 
     socket?.on("chatResponseChunk", (chunk: string) => {
+      console.log('Received chunk:', chunk);
+      
       setIsAiSpeaking(true);
-      setAiResponseBuffer((prev) => prev + chunk);
+      
+      // Update local buffer
+      fullResponseBuffer += chunk;
+      
+      // Update UI state
+      setAiResponseBuffer(fullResponseBuffer);
+      
+      // Speak with ElevenLabs in real-time (only the new chunk)
+      if (ttsManagerRef.current) {
+        console.log('Calling TTS speak method for chunk:', chunk);
+        ttsManagerRef.current.speak(chunk);
+      } else {
+        console.warn('TTS manager not initialized');
+      }
     });
 
     socket?.on("chatResponseDone", () => {
-      const fullResponse = aiResponseBuffer;
-      setAiResponse(fullResponse);
+      console.log('Chat response done, full response:', fullResponseBuffer);
+      
+      // Add complete response to conversation history
       setConversationHistory((prev) => [
         ...prev,
-        { type: "ai", content: fullResponse, timestamp: new Date() },
+        { type: "ai", content: fullResponseBuffer, timestamp: new Date() },
       ]);
+      
+      // Clear the buffer
       setAiResponseBuffer("");
-      setIsAiSpeaking(false);
+      fullResponseBuffer = ''; // Reset local buffer
+      
+      // Check if TTS is still playing after a delay
+      setTimeout(() => {
+        if (ttsManagerRef.current && !ttsManagerRef.current.speaking) {
+          setIsAiSpeaking(false);
+        }
+      }, 2000);
     });
 
     return () => {
       socket?.off("chatResponseChunk");
       socket?.off("chatResponseDone");
+      ttsManagerRef.current?.stop();
     };
-  }, [isOpen, aiResponseBuffer]);
+  }, [isOpen]);
+
+  // Auto-cleanup TTS on component unmount
+  useEffect(() => {
+    return () => {
+      ttsManagerRef.current?.stop();
+    };
+  }, []);
+
+  // Test TTS function (you can call this to test)
+  const testTTS = async () => {
+    if (ttsManagerRef.current) {
+      console.log('Testing TTS...');
+      await ttsManagerRef.current.speak("Hello, this is a test of the text to speech system.");
+    }
+  };
+
 
   // Toggle voice recognition
   const toggleListening = () => {
@@ -230,6 +523,7 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
 
   // Reset state and close modal
   const handleEndSession = () => {
+     ttsManagerRef.current?.stop();
     setIsListening(false);
     setTranscription("");
     setAiResponse("");
@@ -248,13 +542,14 @@ export function VoiceModal({ isOpen, onClose }: VoiceModalProps) {
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             <h2 className="text-lg font-semibold">Voice Conversation</h2>
           </div>
+          {/* Test TTS Button (remove this in production) */}
           <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="text-slate-400 hover:text-white"
+            variant="outline"
+            size="sm"
+            onClick={testTTS}
+            className="mr-2"
           >
-            <X className="h-5 w-5" />
+            Test TTS
           </Button>
         </div>
 
